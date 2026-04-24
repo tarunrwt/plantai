@@ -16,6 +16,7 @@ app.add_middleware(
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
         "https://plantai.vercel.app",
     ],
+    allow_origin_regex=r"https://plantai.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],

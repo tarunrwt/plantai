@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: plantai-api
+    runtime: docker
+    dockerfilePath: ./fastapi/Dockerfile
+    dockerContext: ./fastapi
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: FRONTEND_URL
+        value: https://plantai.vercel.app
