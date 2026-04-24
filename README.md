@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌿 PlantAI — AI Plant Disease Detection
 
-## Getting Started
+> Instantly detect plant diseases with AI. Upload a leaf photo, get diagnosis with confidence score, severity rating, and actionable treatment steps.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3ECF8E?logo=supabase)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+## Features
+
+- 🔬 **AI Diagnosis** — 38 disease classes via HuggingFace MobileNetV2
+- 📊 **Severity Rating** — Low / Medium / High / Critical
+- 💊 **Treatment Steps** — Actionable, disease-specific guidance
+- 📈 **Dashboard** — Track disease trends with interactive charts
+- 📋 **Scan History** — Filter, search, and review past scans
+- 🔗 **Share Reports** — Generate public links for agronomists
+- 📱 **Mobile First** — PWA-ready, designed for field use
+- 🔒 **Tier Gating** — Free (10 scans/mo), Pro ($9/mo), Team ($29/mo)
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16, TypeScript, Tailwind CSS, Framer Motion |
+| Backend | FastAPI, HuggingFace Transformers, MobileNetV2 |
+| Database | Supabase (PostgreSQL + Auth + Storage + RLS) |
+| Deployment | Vercel (frontend), Railway (API) |
+
+## Quick Start
 
 ```bash
+# Clone
+git clone https://github.com/YOUR_USERNAME/plantai.git
+cd plantai
+
+# Install
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Run database schema
+# Paste supabase/schema.sql into Supabase SQL Editor
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_FASTAPI_URL=http://localhost:8000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+plantai/
+├── src/
+│   ├── app/                  # Next.js App Router pages
+│   │   ├── app/              # Authenticated modules
+│   │   │   ├── analyze/      # Core AI scan flow
+│   │   │   ├── dashboard/    # Analytics & charts
+│   │   │   ├── history/      # Scan history + drawer
+│   │   │   ├── profile/      # User profile
+│   │   │   ├── settings/     # Subscription & account
+│   │   │   └── welcome/      # Onboarding flow
+│   │   ├── auth/callback/    # OAuth callback handler
+│   │   ├── login/            # Login page
+│   │   ├── signup/           # Signup page
+│   │   └── share/[token]/    # Public scan report
+│   ├── components/           # Reusable UI components
+│   ├── lib/                  # Supabase clients & utilities
+│   └── types/                # TypeScript definitions
+├── fastapi/                  # Python prediction service
+│   ├── main.py               # FastAPI endpoints
+│   ├── model.py              # HuggingFace model loader
+│   ├── treatment_map.py      # 38-class treatment database
+│   └── Dockerfile            # Production container
+├── supabase/
+│   └── schema.sql            # Database schema + RLS
+└── public/
+    └── manifest.json         # PWA manifest
+```
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
