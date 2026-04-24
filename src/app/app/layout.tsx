@@ -10,12 +10,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     const { redirect } = await import("next/navigation");
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect("/login");
+    if (!user) return redirect("/login");
 
     const { data: profile } = await (supabase as any)
       .from("profiles")
       .select("onboarding_complete")
-      .eq("id", user.id)
+      .eq("id", user!.id)
       .single();
   }
 
