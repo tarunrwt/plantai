@@ -100,10 +100,11 @@ export default function AnalyzePage() {
 
       setResult({ ...prediction, imageUrl });
       setState("result");
-    } catch {
+    } catch (err: any) {
       if (warmingTimer.current) clearTimeout(warmingTimer.current);
       setWarmingUp(false);
-      setError("AI model could not process this image. Try a clearer, well-lit photo.");
+      const msg = err?.message || "Unknown error";
+      setError(`Failed to analyze: ${msg}. Check if the AI service is running.`);
       setState("error");
     }
   }, [supabase]);

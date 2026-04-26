@@ -15,10 +15,11 @@ app.add_middleware(
     allow_origins=[
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
         "https://plantai.vercel.app",
+        "https://plantai-lovat.vercel.app",
     ],
-    allow_origin_regex=r"https://plantai.*\.vercel\.app",
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
