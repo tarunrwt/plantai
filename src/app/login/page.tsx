@@ -20,18 +20,23 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: form.email,
-      password: form.password,
-    });
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push("/app/dashboard");
+    } catch (err) {
+      setError("Unable to connect to auth service. Please try again.");
       setLoading(false);
-      return;
     }
-
-    router.push("/app/dashboard");
   };
 
   const handleGoogle = async () => {
