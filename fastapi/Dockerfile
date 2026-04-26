@@ -12,8 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Pre-download model at build time to avoid cold start
-RUN python -c "from model import get_classifier; get_classifier()"
+# Model downloads lazily on first request (saves build memory)
 
 EXPOSE 8000
 
