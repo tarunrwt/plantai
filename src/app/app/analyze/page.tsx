@@ -69,15 +69,19 @@ export default function AnalyzePage() {
       // Send image directly to FastAPI for AI prediction
       const formData = new FormData();
       formData.append("image", file);
-      const apiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || "https://plantai-api.onrender.com";
-      const resp = await fetch(`${apiUrl}/predict`, {
+
+      // Call our own API route (same domain = no CORS)
+      const resp = await fetch("/api/predict", {
         method: "POST",
         body: formData,
       });
       if (warmingTimer.current) clearTimeout(warmingTimer.current);
       setWarmingUp(false);
 
-      if (!resp.ok) throw new Error(`Prediction failed: ${resp.status}`);
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || `Prediction failed: ${resp.status}`);
+      }
       const prediction: PredictResponse = await resp.json();
 
       // Try to upload to Supabase Storage for history (non-blocking)
