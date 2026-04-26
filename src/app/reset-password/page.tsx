@@ -21,15 +21,15 @@ export default function ResetPasswordPage() {
   // Supabase injects the recovery token via URL hash — listen for it
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
+      (event: string) => {
         if (event === "PASSWORD_RECOVERY") {
           setSessionReady(true);
         }
       }
     );
     // Also check if already in recovery session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
+    supabase.auth.getSession().then(({ data }: any) => {
+      if (data?.session) setSessionReady(true);
     });
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
