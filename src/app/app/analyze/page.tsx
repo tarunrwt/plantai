@@ -58,43 +58,47 @@ export default function AnalyzePage() {
       return;
     }
 
-    setPreview(URL.createObjectURL(file));
-    setState("uploading");
-
-    // Upload to Supabase Storage
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const fileName = `${user.id}/${nanoid()}.${file.name.split(".").pop()}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("scans")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
-
-    if (uploadError) {
-      setError("Failed to upload image. Please try again.");
-      setState("error");
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage.from("scans").getPublicUrl(uploadData.path);
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
     setState("predicting");
 
-    // Start warming-up timer
+    // Start warming-up timer (Render free tier cold start)
     warmingTimer.current = setTimeout(() => setWarmingUp(true), 10000);
 
     try {
+      // Send image directly to FastAPI for AI prediction
       const formData = new FormData();
       formData.append("image", file);
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_URL}/predict`, {
+      const apiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || "https://plantai-api.onrender.com";
+      const resp = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         body: formData,
       });
       if (warmingTimer.current) clearTimeout(warmingTimer.current);
       setWarmingUp(false);
 
-      if (!resp.ok) throw new Error("Prediction failed");
+      if (!resp.ok) throw new Error(`Prediction failed: ${resp.status}`);
       const prediction: PredictResponse = await resp.json();
-      setResult({ ...prediction, imageUrl: publicUrl });
+
+      // Try to upload to Supabase Storage for history (non-blocking)
+      let imageUrl = previewUrl;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const fileName = `${user.id}/${nanoid()}.${file.name.split(".").pop()}`;
+          const { data: uploadData } = await supabase.storage
+            .from("scans")
+            .upload(fileName, file, { cacheControl: "3600", upsert: false });
+          if (uploadData) {
+            const { data: { publicUrl } } = supabase.storage.from("scans").getPublicUrl(uploadData.path);
+            imageUrl = publicUrl;
+          }
+        }
+      } catch {
+        // Storage upload failed — non-critical, use local preview
+      }
+
+      setResult({ ...prediction, imageUrl });
       setState("result");
     } catch {
       if (warmingTimer.current) clearTimeout(warmingTimer.current);
