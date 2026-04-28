@@ -3,12 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from PIL import Image
 import io
-import os
 from typing import List
-from model import get_classifier, compute_severity
+from model import predict, compute_severity
 from treatment_map import TREATMENT_MAP
 
-app = FastAPI(title="PlantAI Prediction Service", version="1.0.0")
+app = FastAPI(title="PlantAI Prediction Service", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,12 +27,11 @@ class PredictResponse(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "model": "linkanjarad/mobilenet_v2_1.0_224-plant-disease-classification"}
+    return {"status": "ok", "engine": "onnxruntime", "model": "mobilenet_v2_plant_disease"}
 
 
 @app.post("/predict", response_model=PredictResponse)
-async def predict(image: UploadFile = File(...)):
-    # Validate file type
+async def predict_endpoint(image: UploadFile = File(...)):
     if image.content_type not in ["image/jpeg", "image/png", "image/webp"]:
         raise HTTPException(status_code=400, detail="Invalid image type. Use JPG, PNG, or WebP.")
 
@@ -41,17 +39,16 @@ async def predict(image: UploadFile = File(...)):
         contents = await image.read()
         img = Image.open(io.BytesIO(contents)).convert("RGB")
     except Exception:
-        raise HTTPException(status_code=400, detail="Could not process image. Ensure it is a valid image file.")
+        raise HTTPException(status_code=400, detail="Could not process image.")
 
     if img.width < 224 or img.height < 224:
-        raise HTTPException(status_code=400, detail="Image too small. Minimum 224x224 pixels required.")
+        raise HTTPException(status_code=400, detail="Image too small. Minimum 224x224 pixels.")
 
-    classifier = get_classifier()
-    results = classifier(img)
+    results = predict(img)
     top = results[0]
 
     disease = top["label"]
-    confidence = round(float(top["score"]), 4)
+    confidence = round(top["score"], 4)
     severity = compute_severity(confidence, disease)
     treatment_steps = TREATMENT_MAP.get(disease, [
         "Isolate the affected plant from healthy crops immediately.",
