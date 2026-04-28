@@ -3,9 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from PIL import Image
 import io
+import sys
 from typing import List
-from model import predict, compute_severity
-from treatment_map import TREATMENT_MAP
 
 app = FastAPI(title="PlantAI Prediction Service", version="2.0.0")
 
@@ -16,6 +15,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Import model with error handling
+try:
+    from model import predict, compute_severity
+    from treatment_map import TREATMENT_MAP
+    print("[PlantAI] All imports successful", flush=True)
+except Exception as e:
+    print(f"[PlantAI] FATAL IMPORT ERROR: {e}", flush=True)
+    sys.exit(1)
 
 
 class PredictResponse(BaseModel):
@@ -44,7 +52,12 @@ async def predict_endpoint(image: UploadFile = File(...)):
     if img.width < 224 or img.height < 224:
         raise HTTPException(status_code=400, detail="Image too small. Minimum 224x224 pixels.")
 
-    results = predict(img)
+    try:
+        results = predict(img)
+    except Exception as e:
+        print(f"[PlantAI] Prediction error: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Model error: {str(e)}")
+
     top = results[0]
 
     disease = top["label"]
