@@ -39,8 +39,19 @@ fastapi/__pycache__/
 fastapi/*.pyc
 fastapi/.venv/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
 # Code review graph
 .code-review-graph/
+
+# AI Agent files
+AGENTS.md
+CLAUDE.md
 
 # Misc
 *.tsbuildinfo
